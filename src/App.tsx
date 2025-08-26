@@ -289,8 +289,8 @@ export default function App() {
       <div 
         className={classNames("w-full", {
           "h-screen": isDesktop,
-          "h-[calc(100vh-90px)]": isMobile,
-          "h-[calc(100vh-120px)]": isTablet,
+          "h-[calc(100vh-140px)]": isMobile,
+          "h-[calc(100vh-160px)]": isTablet,
         })}
       >
         <Canvas gl={{ preserveDrawingBuffer: true, antialias: true }} shadows camera={{ fov: isMobile ? 25 : 20 }} linear={false} dpr={1.5}>
@@ -336,11 +336,11 @@ export default function App() {
 
       {/* Mobile Header */}
       {(isMobile || isTablet) && (
-        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/20 to-transparent">
-          <Logo className="w-32" fill="white" />
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 pt-safe bg-gradient-to-b from-black/20 to-transparent">
+          <Logo className="w-28" fill="white" />
           <div className="flex items-center space-x-2">
             <button
-              className="text-sm text-white font-medium h-10 px-4 bg-primary rounded-full"
+              className="text-sm text-white font-medium h-9 px-3 bg-primary rounded-full"
               type="button"
               onClick={() => {
                 DownloadPose();
@@ -349,11 +349,11 @@ export default function App() {
               Export
             </button>
             <button
-              className="text-white w-10 h-10 flex items-center justify-center bg-black/30 rounded-full"
+              className="text-white w-9 h-9 flex items-center justify-center bg-black/30 rounded-full"
               type="button"
               onClick={() => setIsManualOpen(true)}
             >
-              <IconMenu className="w-5 h-5" fill="white" />
+              <IconMenu className="w-4 h-4" fill="white" />
             </button>
           </div>
         </div>

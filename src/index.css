@@ -45,4 +45,20 @@
   display: none;
 }
 
+/* Mobile viewport optimizations */
+@supports (height: 100dvh) {
+  .mobile-vh {
+    height: 100dvh;
+  }
+}
+
+/* Safe area support */
+.pt-safe {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
 

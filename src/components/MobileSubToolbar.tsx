@@ -129,7 +129,7 @@ const MobileSubToolbar: React.FC<Props> = ({
           {/* Panel */}
           <motion.div
             className={classNames(
-              "fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl max-h-[80vh] overflow-hidden",
+              "fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl max-h-[75vh] overflow-hidden",
               {
                 "bg-white": theme === "light",
                 "bg-[#2A2B2F]": theme === "dark",
@@ -168,7 +168,7 @@ const MobileSubToolbar: React.FC<Props> = ({
             </div>
 
             {/* Content */}
-            <div className="p-4 overflow-y-auto max-h-[60vh]">
+            <div className="p-4 overflow-y-auto max-h-[55vh]">
               {/* Show color picker if active, otherwise show item grid */}
               {isColorPaletteShow && hasColorPalette && activeColorItem ? (
                 /* Color Picker - Replaces the grid */
@@ -189,8 +189,8 @@ const MobileSubToolbar: React.FC<Props> = ({
                     />
                   </div>
                   
-                  {/* Color Picker - centered and larger */}
-                  <div className="flex-1 flex flex-col items-center justify-center mb-6">
+                  {/* Color Picker - centered and optimized */}
+                  <div className="flex-1 flex flex-col items-center justify-center mb-4">
                     <div className="w-full max-w-80">
                       <HexColorPicker
                         color={colors.find(c => c.subToolId === activeColorItem)?.color || "#94A3B8"}
@@ -200,7 +200,7 @@ const MobileSubToolbar: React.FC<Props> = ({
                             color,
                           });
                         }}
-                        style={{ width: "100%", height: "280px" }}
+                        style={{ width: "100%", height: "240px" }}
                       />
                     </div>
                   </div>

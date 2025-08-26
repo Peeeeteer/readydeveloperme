@@ -24,10 +24,10 @@ const MobileToolbar: React.FC<Props> = ({ toolId, items, onClickItem }) => {
   const theme = useStore((state) => state.theme);
 
   return (
-    <div className="w-full px-6 py-5">
+    <div className="w-full px-6 py-5 pb-safe">
       <div 
         className={classNames(
-          "flex items-center gap-x-5 overflow-x-auto scrollbar-hide px-5 py-5 rounded-2xl",
+          "flex items-center gap-x-5 overflow-x-auto scrollbar-hide px-5 py-4 rounded-2xl",
           {
             "bg-neutral-10": theme === "light",
             "bg-[#2A2B2F]": theme === "dark",
