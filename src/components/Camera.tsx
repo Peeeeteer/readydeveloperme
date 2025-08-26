@@ -1,6 +1,7 @@
 import { OrbitControls } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import React, { useRef } from 'react'
+import { useMediaQuery } from "react-responsive";
 import * as THREE from "three";
 
 
@@ -36,6 +37,21 @@ const CameraPosition = {
 const CameraControls = ({ viewMode, setViewMode }) => {
 
     const orbitControls = useRef();
+    const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+    
+    // Mobile-adjusted positions (2.25% to the left for close_up)
+    const getMobileAdjustedPosition = (position, target) => {
+        if (!isMobile) return { position, target };
+        
+        // For close_up view, move 2.25% to the left
+        if (viewMode === "close_up") {
+            const adjustedTarget = target.clone();
+            adjustedTarget.x -= 0.0225; // 2.25% adjustment to the left
+            return { position, target: adjustedTarget };
+        }
+        
+        return { position, target };
+    };
 
     useFrame((state, delta) => {
 
@@ -47,8 +63,12 @@ const CameraControls = ({ viewMode, setViewMode }) => {
         }
 
         if (viewMode == "close_up") {
-            state.camera.position.lerp(CameraPosition.close_up.position, 3 * delta)
-            orbitControls.current.target.lerp(CameraPosition.close_up.target, 3 * delta)
+            const { position, target } = getMobileAdjustedPosition(
+                CameraPosition.close_up.position, 
+                CameraPosition.close_up.target
+            );
+            state.camera.position.lerp(position, 3 * delta)
+            orbitControls.current.target.lerp(target, 3 * delta)
 
         }
 

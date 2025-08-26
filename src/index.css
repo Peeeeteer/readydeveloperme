@@ -35,4 +35,14 @@
   transition-timing-function: ease-in-out;
 }
 
+/* Hide scrollbar for mobile toolbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 

@@ -23,6 +23,9 @@ import { useControls } from "leva";
 import Lights from "./components/Lights";
 import { Analytics } from "@vercel/analytics/react";
 import { Leva } from 'leva'
+import MobileToolbar from "./components/MobileToolbar";
+import MobileSubToolbar from "./components/MobileSubToolbar";
+import MobileViewMode from "./components/MobileViewMode";
 
 type Mode = "front" | "side" | "close_up" | "free";
 
@@ -35,6 +38,7 @@ export default function App() {
   const [isToolbarOpen, setIsToolbarOpen] = useState(true);
   const [viewMode, setViewMode] = useState<Mode>("front");
   const [isManualOpen, setIsManualOpen] = useState(false);
+  const [isMobileSubToolbarOpen, setIsMobileSubToolbarOpen] = useState(false);
   const theme = useStore((state) => state.theme);
   const isDesktop = useMediaQuery({ query: "(min-width: 960px)" });
   const refLogoInput = useRef<HTMLInputElement>(null);
@@ -267,17 +271,13 @@ export default function App() {
     }, 1000);
   };
 
-  if (!isDesktop) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <p className="text-3xl font-medium">Mobile support coming soon</p>
-      </div>
-    );
-  }
+  // Mobile breakpoints
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+  const isTablet = useMediaQuery({ query: "(min-width: 769px) and (max-width: 1023px)" });
   return (
 
     <div
-      className={classNames("w-full h-screen relative", {
+      className={classNames("w-full h-screen relative overflow-hidden", {
         "bg-white": theme === "light",
         "bg-neutral-100": theme === "dark",
       })}
@@ -285,8 +285,15 @@ export default function App() {
       <Analytics mode="production" debug={true} />
       <Loader />
 
-      <div className="w-full h-screen ">
-        <Canvas gl={{ preserveDrawingBuffer: true, antialias: true }} shadows camera={{ fov: 20 }} linear={false} dpr={1.5}>
+      {/* 3D Canvas - Full height on mobile, adjusted for controls */}
+      <div 
+        className={classNames("w-full", {
+          "h-screen": isDesktop,
+          "h-[calc(100vh-90px)]": isMobile,
+          "h-[calc(100vh-120px)]": isTablet,
+        })}
+      >
+        <Canvas gl={{ preserveDrawingBuffer: true, antialias: true }} shadows camera={{ fov: isMobile ? 25 : 20 }} linear={false} dpr={1.5}>
           <Ground theme={theme} visible={visible} />
           <Character colors={subToolColors} selected={selected} logo={logo} />
           <Camera viewMode={viewMode} setViewMode={setViewMode} />
@@ -295,61 +302,243 @@ export default function App() {
         </Canvas>
       </div>
 
-      <div className="absolute top-8 left-8">
-        <Logo className="w-44" fill={theme === "light" ? "#121F3E" : "white"} />
-      </div>
+      {/* Desktop Header */}
+      {isDesktop && (
+        <>
+          <div className="absolute top-8 left-8">
+            <Logo className="w-44" fill={theme === "light" ? "#121F3E" : "white"} />
+          </div>
 
-      <div className="flex items-center absolute top-8 right-8">
-        <button
-          className="text-sm text-white font-medium h-11 px-4 bg-primary rounded-full ml-auto"
-          type="button"
-          onClick={() => {
-            DownloadPose();
-          }}
-        >
-          Export
-        </button>
-        <button
-          className="text-sm text-white w-11 h-11 flex items-center justify-center bg-neutral-20 rounded-full ml-4"
-          type="button"
-          onClick={() => setIsManualOpen(true)}
-        >
-          <IconMenu className="w-5 h-5" fill="#4B50EC" />
-        </button>
-      </div>
+          <div className="flex items-center absolute top-8 right-8">
+            <button
+              className="text-sm text-white font-medium h-11 px-4 bg-primary rounded-full ml-auto"
+              type="button"
+              onClick={() => {
+                DownloadPose();
+              }}
+            >
+              Export
+            </button>
+            <button
+              className="text-sm text-white w-11 h-11 flex items-center justify-center bg-neutral-20 rounded-full ml-4"
+              type="button"
+              onClick={() => setIsManualOpen(true)}
+            >
+              <IconMenu className="w-5 h-5" fill="#4B50EC" />
+            </button>
+          </div>
 
-      <div className="absolute top-1/2 left-8 -translate-y-1/2">
-        <ViewMode mode={viewMode} onClickMode={setViewMode} />
-      </div>
+          <div className="absolute top-1/2 left-8 -translate-y-1/2">
+            <ViewMode mode={viewMode} onClickMode={setViewMode} />
+          </div>
+        </>
+      )}
 
-      <div className="flex items-center mr-auto absolute bottom-8 left-8">
-        <ThemeToggle />
-        <button className="text-[#8D98AF] text-xs font-medium ml-5">
-          {
-            debuggerVisible ? (
-              <span onClick={() => setDebuggerVisible(!debuggerVisible)}>Show Debugger</span>
-            ) : (
-              <span onClick={() => setDebuggerVisible(!debuggerVisible)}>Hide Debugger</span>
-            )
+      {/* Mobile Header */}
+      {(isMobile || isTablet) && (
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/20 to-transparent">
+          <Logo className="w-32" fill="white" />
+          <div className="flex items-center space-x-2">
+            <button
+              className="text-sm text-white font-medium h-10 px-4 bg-primary rounded-full"
+              type="button"
+              onClick={() => {
+                DownloadPose();
+              }}
+            >
+              Export
+            </button>
+            <button
+              className="text-white w-10 h-10 flex items-center justify-center bg-black/30 rounded-full"
+              type="button"
+              onClick={() => setIsManualOpen(true)}
+            >
+              <IconMenu className="w-5 h-5" fill="white" />
+            </button>
+          </div>
+        </div>
+      )}
 
-          }
+      {/* Mobile View Mode - positioned above toolbar (only on tablet, not mobile) */}
+      {isTablet && (
+        <div className="absolute bottom-20 left-0 right-0 z-10 bg-gradient-to-t from-black/20 to-transparent pb-2">
+          <MobileViewMode mode={viewMode} onClickMode={setViewMode} />
+        </div>
+      )}
+
+      {/* Desktop Controls */}
+      {isDesktop && (
+        <>
+          <div className="flex items-center mr-auto absolute bottom-8 left-8">
+            <ThemeToggle />
+            <button className="text-[#8D98AF] text-xs font-medium ml-5">
+              {
+                debuggerVisible ? (
+                  <span onClick={() => setDebuggerVisible(!debuggerVisible)}>Show Debugger</span>
+                ) : (
+                  <span onClick={() => setDebuggerVisible(!debuggerVisible)}>Hide Debugger</span>
+                )
+
+              }
 
 
-        </button>
-        <p className="text-[#8D98AF] text-xs font-medium ml-5" >
-          © 2024,
-          <a href="https://github.com/llo7d" target="_blank">
-            {" "}by llo7d
-          </a>
-        </p>
-      </div>
+            </button>
+            <p className="text-[#8D98AF] text-xs font-medium ml-5" >
+              © 2025,
+              <a href="https://github.com/Peeeeteer" target="_blank">
+                {" "}by Peter
+              </a>
+            </p>
+          </div>
 
-      <div className="absolute bottom-8 right-8">
-        <SubToolbar
+          <div className="absolute bottom-8 right-8">
+            <SubToolbar
+              subToolId={selected[tool.id]}
+              tool={tool}
+              colors={subToolColors}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              onClickItem={(item) => {
+                setSelected({
+                  ...selected,
+                  [tool.id]: item.id
+                })
+
+                if (item.id === 'logo_upload') {
+                  refLogoInput.current?.click();
+                }
+
+              }}
+              // Uncomment below if you want hide/reveal version of the toolbar.
+              // onHoverTool={setIsToolbarOpen}
+              onChangeColor={(subToolColor) => {
+                const newSubToolColors = subToolColors.map((color) => {
+                  if (color.subToolId === selected[tool.id]) {
+                    return {
+                      ...color,
+                      color: subToolColor.color,
+                    };
+                  }
+
+                  return color;
+                });
+
+                setSubToolColors(newSubToolColors);
+
+              }}
+            />
+          </div>
+
+          <div
+            className="absolute right-32 bottom-10"
+          // Uncomment below if you want hide/reveal version of the toolbar.
+          // onMouseEnter={() => setIsToolbarOpen(true)}
+          // onMouseLeave={() => setIsToolbarOpen(false)}
+          >
+            <AnimatePresence>
+              {isToolbarOpen && (
+                <motion.div
+                  className="overflow-hidden h-24 flex items-end"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${trayWidth}rem` }}
+                  exit={{ width: 0 }}
+                >
+                  <Toolbar
+                    toolId={tool.id}
+                    items={toolItems}
+                    onClickItem={(tool) => {
+                      const newTool = (() => {
+                        if (tool.id === 'tool_2') {
+                          return {
+                            ...tool,
+                            items: tool.items.map((item) => {
+                              const byId = (id: string) => {
+                                return (item: typeof tools[0]) => item.id === id
+                              }
+
+                              const icon = (() => {
+                                switch (item.id) {
+                                  case "tool_2_item_1":
+                                    return toolItems.find(byId('hair'))?.icon;
+
+                                  case "tool_2_item_2":
+                                    return toolItems.find(byId('beard'))?.icon;
+
+                                  default:
+                                    return item.icon;
+                                }
+                              })();
+
+                              return { ...item, icon: icon || item.icon };
+                            }),
+                          };
+                        }
+
+                        return tool
+                      })()
+
+                      setTool(newTool)
+                    }}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </>
+      )}
+
+      {/* Mobile Toolbar */}
+      {(isMobile || isTablet) && (
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          <MobileToolbar
+            toolId={tool.id}
+            items={toolItems}
+            onClickItem={(selectedTool) => {
+              const newTool = (() => {
+                if (selectedTool.id === 'tool_2') {
+                  return {
+                    ...selectedTool,
+                    items: selectedTool.items.map((item) => {
+                      const byId = (id: string) => {
+                        return (item: typeof tools[0]) => item.id === id
+                      }
+
+                      const icon = (() => {
+                        switch (item.id) {
+                          case "tool_2_item_1":
+                            return toolItems.find(byId('hair'))?.icon;
+
+                          case "tool_2_item_2":
+                            return toolItems.find(byId('beard'))?.icon;
+
+                          default:
+                            return item.icon;
+                        }
+                      })();
+
+                      return { ...item, icon: icon || item.icon };
+                    }),
+                  };
+                }
+
+                return selectedTool;
+              })()
+
+              setTool(newTool);
+              setIsMobileSubToolbarOpen(true);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Mobile SubToolbar */}
+      {(isMobile || isTablet) && (
+        <MobileSubToolbar
+          isOpen={isMobileSubToolbarOpen}
+          onClose={() => setIsMobileSubToolbarOpen(false)}
           subToolId={selected[tool.id]}
           tool={tool}
           colors={subToolColors}
-          viewMode={viewMode}
           setViewMode={setViewMode}
           onClickItem={(item) => {
             setSelected({
@@ -360,10 +549,7 @@ export default function App() {
             if (item.id === 'logo_upload') {
               refLogoInput.current?.click();
             }
-
           }}
-          // Uncomment below if you want hide/reveal version of the toolbar.
-          // onHoverTool={setIsToolbarOpen}
           onChangeColor={(subToolColor) => {
             const newSubToolColors = subToolColors.map((color) => {
               if (color.subToolId === selected[tool.id]) {
@@ -377,73 +563,18 @@ export default function App() {
             });
 
             setSubToolColors(newSubToolColors);
-
           }}
         />
-        <input
-          ref={refLogoInput}
-          className="hidden"
-          type="file"
-          accept="image/png"
-          onChange={handlePickedLogo}
-        />
-      </div>
+      )}
 
-      <div
-        className="absolute right-32 bottom-10"
-      // Uncomment below if you want hide/reveal version of the toolbar.
-      // onMouseEnter={() => setIsToolbarOpen(true)}
-      // onMouseLeave={() => setIsToolbarOpen(false)}
-      >
-        <AnimatePresence>
-          {isToolbarOpen && (
-            <motion.div
-              className="overflow-hidden h-24 flex items-end"
-              initial={{ width: 0 }}
-              animate={{ width: `${trayWidth}rem` }}
-              exit={{ width: 0 }}
-            >
-              <Toolbar
-                toolId={tool.id}
-                items={toolItems}
-                onClickItem={(tool) => {
-                  const newTool = (() => {
-                    if (tool.id === 'tool_2') {
-                      return {
-                        ...tool,
-                        items: tool.items.map((item) => {
-                          const byId = (id: string) => {
-                            return (item: typeof tools[0]) => item.id === id
-                          }
-
-                          const icon = (() => {
-                            switch (item.id) {
-                              case "tool_2_item_1":
-                                return toolItems.find(byId('hair'))?.icon;
-
-                              case "tool_2_item_2":
-                                return toolItems.find(byId('beard'))?.icon;
-
-                              default:
-                                return item.icon;
-                            }
-                          })();
-
-                          return { ...item, icon: icon || item.icon };
-                        }),
-                      };
-                    }
-
-                    return tool
-                  })()
-
-                  setTool(newTool)
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      {/* Hidden file input */}
+      <input
+        ref={refLogoInput}
+        className="hidden"
+        type="file"
+        accept="image/png"
+        onChange={handlePickedLogo}
+      />
 
       <ManualPopup
         isOpen={isManualOpen}
